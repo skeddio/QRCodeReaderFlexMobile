@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<fxpProperties abbreviated="false" authoringTool="Flex Builder" compiles="true" parentProject="45d89919-d9a9-41ca-a822-522a3104fab9" projectUUID="45d89919-d9a9-41ca-a822-522a3104fab9" pureCatalystProject="false" sdkVersion="4.6.0" uuid="e12cf0b6-d605-4421-ad13-c3fbd3a16134" version="15">
+  <projects>
+    <project filename="ZXing-2.0.fxpl" position="2" projectUUID="f87b8f38-81f2-4310-9704-9318deb74286" uuid="e12cf0b6-d605-4421-ad13-c3fbd3a16134"/>
+  </projects>
+  <src/>
+  <swc>
+    <linked location="sdkPlaceHolder" path="sdkPlaceHolder" position="0" uuid="e12cf0b6-d605-4421-ad13-c3fbd3a16134"/>
+    <linked location="C:/Projects/TRICMO_PROJECT/TriCMOMobile/QRCodeReaderMobile/libs" path="/libs" position="1" uuid="e6de0092-1de5-4529-9b0c-16b66609da5f"/>
+  </swc>
+  <misc/>
+  <theme/>
+  <mxmlFormattingPrefs groupAttributesByState="true" maxLineWidth="100" mxmlAlignAttributes="true" mxmlAttributeOrder="id,userLabel,includeIn,excludeFrom,visible,x,y,z,left,right,top,bottom,width,height,minWidth,minHeight,maxWidth,maxHeight,label" mxmlKeepAttributeValuesOrganized="true"/>
+</fxpProperties>

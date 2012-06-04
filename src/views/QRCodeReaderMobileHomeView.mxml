@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:mx="library://ns.adobe.com/flex/mx"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		
+		viewDeactivate="this_deActivateHandler(event)"
+		overlayControls="false"
+		
+		title="QR Code Reader"
+		viewActivate="this_viewActivateHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.google.zxing.BarcodeFormat;
+			import com.google.zxing.BinaryBitmap;
+			import com.google.zxing.BufferedImageLuminanceSource;
+			import com.google.zxing.DecodeHintType;
+			import com.google.zxing.Result;
+			import com.google.zxing.client.result.ParsedResult;
+			import com.google.zxing.client.result.ResultParser;
+			import com.google.zxing.common.GlobalHistogramBinarizer;
+			import com.google.zxing.common.flexdatatypes.HashTable;
+			import com.google.zxing.qrcode.QRCodeReader;
+			
+			import spark.events.ViewNavigatorEvent;
+			
+			protected var camera:Camera;
+			
+			private static const CAMERA_SIZE:int = 250;
+			private static const BMP_SIZE:int = 250;
+			
+			private var videoDisplay:Video=new Video(CAMERA_SIZE, CAMERA_SIZE);
+			private var detectChange:Timer;
+			private var bmd:BitmapData;
+			
+			private var qrReader:QRCodeReader;
+			
+			public var qrCode_found:String;
+			
+			
+			protected function this_viewActivateHandler(event:ViewNavigatorEvent):void
+			{
+				NativeApplication.nativeApplication.addEventListener(Event.ACTIVATE, handleActivate, false, 0, true);
+				NativeApplication.nativeApplication.addEventListener(Event.DEACTIVATE, handleDeactivate, false, 0, true);
+				
+				if (stage.displayState != StageDisplayState.FULL_SCREEN_INTERACTIVE)
+					stage.displayState=StageDisplayState.FULL_SCREEN_INTERACTIVE;
+
+				if (Camera.isSupported)
+				{
+					cameraUIC.addChild(videoDisplay);
+					camera=Camera.getCamera();
+					camera.setMode(CAMERA_SIZE, CAMERA_SIZE, 24);
+					videoDisplay.attachCamera(camera);
+					videoDisplay.x=CAMERA_SIZE;
+					videoDisplay.rotation=90;
+					qrReader=new QRCodeReader;
+					TimerExample();
+				}
+				else
+					infoLb.text="Camera not supported";
+			}
+			
+			public function TimerExample():void
+			{
+				detectChange=new Timer(1000);
+				detectChange.addEventListener(TimerEvent.TIMER, decodeSnapshot);
+				detectChange.start();
+			}
+			
+			public function decodeSnapshot(event:TimerEvent):void
+			{
+				bmd=new BitmapData(BMP_SIZE, BMP_SIZE);
+				bmd.draw(videoDisplay, null, null, null, null, true);
+				videoDisplay.cacheAsBitmap=true;
+				videoDisplay.cacheAsBitmapMatrix=new Matrix;
+				decodeBitmapData(bmd, BMP_SIZE, BMP_SIZE);
+				bmd.dispose();
+				bmd=null;
+				System.gc();
+			}
+			
+			public function decodeBitmapData(bmpd:BitmapData, width:int, height:int):void
+			{
+				var lsource:BufferedImageLuminanceSource=new BufferedImageLuminanceSource(bmpd);
+				var bitmap:BinaryBitmap=new BinaryBitmap(new GlobalHistogramBinarizer(lsource));
+				var ht:HashTable=null;
+				ht=this.getAllHints();
+				var res:Result=null;
+				try
+				{
+					res=qrReader.decode(bitmap, ht);
+				}
+				catch (event:Error)
+				{
+					trace("no QR patterns found...")
+				}
+				
+				if (res == null)
+				{
+					infoLb.text="scanning...";
+				}
+				else
+				{
+					var parsedResult:ParsedResult=ResultParser.parseResult(res);
+					infoLb.text=parsedResult.getDisplayResult();
+					qrCode_found = infoLb.text;
+					detectChange.stop();
+					detectChange.removeEventListener(TimerEvent.TIMER, decodeSnapshot);
+				}
+			}
+			
+			public function getAllHints():HashTable
+			{
+				var ht:HashTable=new HashTable;
+				ht.Add(DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE);
+				return ht;
+			}
+			
+			protected function resetClickHandler():void
+			{
+				detectChange.start();
+				detectChange.addEventListener(TimerEvent.TIMER, decodeSnapshot);
+			}
+			
+			protected function this_deActivateHandler(event:ViewNavigatorEvent):void
+			{
+				videoDisplay=null;
+				camera=null;
+				detectChange.removeEventListener(TimerEvent.TIMER, decodeSnapshot);
+				detectChange.stop();
+			}
+			
+			public function exitView():void{
+				videoDisplay=null;
+				camera=null;
+				detectChange.removeEventListener(TimerEvent.TIMER, decodeSnapshot);
+				detectChange.stop();
+			}
+			
+			private function handleActivate(event:Event):void
+			{
+				NativeApplication.nativeApplication.systemIdleMode = SystemIdleMode.KEEP_AWAKE;
+			}
+			
+			private function handleDeactivate(event:Event):void
+			{
+				NativeApplication.nativeApplication.exit();
+			}
+			
+			
+		]]>
+	</fx:Script>
+	
+	<s:layout>
+		<s:VerticalLayout paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" />
+	</s:layout>
+	
+	<s:Label id="infoLb" color="#333333" text="scanning..." width="100%" textAlign="center"/>
+	
+	<s:Button id="resetBt" label="reset" width="100%" enabled="true" click="resetClickHandler()" />
+	
+	<mx:UIComponent id="cameraUIC"
+					y="60" horizontalCenter="0"
+					width="{CAMERA_SIZE}"
+					height="{CAMERA_SIZE}"
+					/>
+	
+	
+</s:View>
